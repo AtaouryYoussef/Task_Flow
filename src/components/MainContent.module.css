@@ -1,0 +1,75 @@
+.main {
+  margin-top: 56px;
+  margin-left: 240px;
+  padding: 24px;
+  min-height: calc(100vh - 56px);
+  background-color: #f8f9fa;
+  transition: margin-left 0.3s ease;
+}
+
+.board {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  min-height: 500px;
+}
+
+.column {
+  flex: 0 0 300px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  max-height: fit-content;
+}
+
+.colTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.card {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #1B8C3E;
+}
+
+.card:last-child {
+  margin-bottom: 0;
+}
+
+/* Scrollbar styling for the board */
+.board::-webkit-scrollbar {
+  height: 8px;
+}
+
+.board::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+
+.board::-webkit-scrollbar-thumb {
+  background: #1B8C3E;
+  border-radius: 4px;
+}
+
+.board::-webkit-scrollbar-thumb:hover {
+  background: #146b2f;
+}
