@@ -1,102 +1,49 @@
-# TaskFlow - Auth + Protected Layout
-
-Application React + TypeScript avec authentification simple via `json-server`.
-
-## Lancer le projet
-
-1. Installer les dependances:
-
-```bash
-npm install
-```
-
-2. Lancer le backend mock:
-
-```bash
+1. Backend:
 npx json-server --watch db.json --port 4000
-```
 
-3. Lancer le frontend Vite:
-
-```bash
+2. Frontend:
 npm run dev
-```
 
-## Verification Backend (users)
+Questions + Reponses tp 3 : 
 
-`db.json` contient maintenant la collection `users` avec 3 comptes.
+Q1. Pourquoi <Navigate /> et pas navigate() ?
+<Navigate /> s’utilise directement dans le rendu quand on veut rediriger selon une condition.
+navigate() s’utilise plutôt dans un événement ou dans un useEffect.
 
-Tests attendus:
+Q2. Quelle est la différence entre navigate(from) et navigate(from, { replace: true }) ?
+Sans replace, la page actuelle reste dans l’historique.
+Avec replace: true, la page est remplacée, donc on ne peut pas revenir en arrière vers /login.
 
-1. `http://localhost:4000/users` retourne les 3 users en JSON.
-2. `http://localhost:4000/users?email=admin@taskflow.com` filtre bien par email.
+Q3. Après un POST, pourquoi utiliser setProjects(prev => [...prev, data]) au lieu de refaire un GET ?
+Parce que c’est plus rapide. On ajoute directement le projet dans la liste sans refaire une requête au serveur.
 
-Note: les mots de passe sont en clair uniquement pour la demo. En production, jamais.
+Q4. Que se passe-t-il dans ces cas de routes ?
 
-## Comptes de test
+/dashboard sans login → redirection vers /login
 
-1. `admin@taskflow.com` / `admin123`
-2. `ali@taskflow.com` / `ali123`
-3. `sara@taskflow.com` / `sara123`
+/projects/1 sans login → redirection vers /login
 
-## Questions + Reponses
+/nimportequoi → redirection vers /dashboard
 
-### Q2. Pourquoi `useAuth()` lance une erreur si le context est `null` ? Quel bug ca previent ?
+/ → redirection vers /dashboard
 
-Cette erreur protege contre l'utilisation de `useAuth()` hors du `AuthProvider`.
-Sans ce guard, le code lirait un context `null`, ce qui produirait des erreurs plus tard (ex: `cannot read properties of null`) et rendrait le debug plus difficile.
+Après login → on ne revient pas à /login avec le bouton retour.
 
-### Q3. Sans Context, comment partager le user entre `Header`, `Sidebar` et `Login` ? Combien de props ?
+Q5. Quelle est la différence entre <Link> et <NavLink> ? Pourquoi utiliser NavLink ?
+Link sert juste à naviguer.
+NavLink permet aussi de savoir si le lien est actif, donc on peut le styliser (menu actif par exemple).
 
-Il faudrait faire du prop drilling: stocker `user` et les callbacks (`login`, `logout`) dans un parent commun puis les passer de composant en composant.
-On passerait au minimum `user`, `setUser` ou `onLogin`, `onLogout`, et potentiellement `loading`/`error` selon les besoins. Donc rapidement plusieurs props a travers plusieurs niveaux.
+Q6. ProjectForm est utilisé pour POST et PUT. Qu’est-ce qui change ?
+Le formulaire est le même.
+La différence est dans l’utilisation :
 
-### Q4. Pourquoi `e.preventDefault()` est indispensable dans `handleSubmit` ?
+Create (POST) → champs vides.
 
-Parce qu'un `<form>` soumet par defaut la page (reload navigateur).
-`e.preventDefault()` bloque ce comportement pour garder l'application SPA, conserver le state React et executer la logique async de login proprement.
+Edit (PUT) → champs déjà remplis avec les données du projet.
 
-### Q5. Que fait la destructuration `{ password: _, ...user }` ? Pourquoi exclure le password ?
+Q7. Si json-server est arrêté et on fait un POST, que se passe-t-il ?
+Axios retourne une erreur réseau. Elle est capturée dans catch et un message d’erreur s’affiche.
 
-Elle extrait la cle `password` dans une variable `_` (ignoree) puis met toutes les autres proprietes dans `user`.
-On exclut le mot de passe pour ne pas le stocker dans l'etat global, ne pas l'exposer inutilement dans les composants, et limiter les risques de fuite.
-
-### Q6. Pourquoi `Dashboard` est separe de `App` ?
-
-Pour separer les responsabilites:
-
-1. `App` decide seulement: utilisateur connecte ou non.
-2. `Dashboard` gere la logique metier du board (fetch, sidebar, rendu principal).
-
-Ce decoupage rend le code plus lisible, plus testable et plus simple a maintenir.
-
-### Q7. Test flux complet: login -> dashboard -> deconnexion -> login
-
-Flux attendu:
-
-1. Login avec `admin@taskflow.com / admin123`.
-2. Affichage du dashboard.
-3. Clic sur `Deconnexion`.
-4. Retour automatique vers la page Login.
-
-### Q8. `onLogout` est un callback: dessiner le flux
-
-Flux:
-
-1. `Header` recoit `onLogout` en prop.
-2. Clic bouton `Deconnexion` dans `Header`.
-3. `onLogout()` est execute dans le parent (`Dashboard`).
-4. `dispatch({ type: 'LOGOUT' })` met `authState.user` a `null`.
-5. `App` re-render.
-6. Condition `if (!authState.user)` vraie -> rendu `<Login />`.
-
-### Q9. Pourquoi le flash disparait avec `useLayoutEffect` ?
-
-`useLayoutEffect` s'execute apres le commit DOM mais avant le paint navigateur.
-La position est donc calculee avant l'affichage, ce qui evite de voir l'etat initial `(0,0)`.
-
-### Q10. Pourquoi ne pas utiliser `useLayoutEffect` partout ?
-
-Parce qu'il bloque le paint tant qu'il n'a pas fini, donc peut degrader les performances et la fluidite si abuse.
-On l'utilise uniquement quand une mesure/synchronisation visuelle doit absolument se faire avant affichage (layout, positionnement, scroll).
-
+Q8. Avec fetch, un 404 ne lance pas d’erreur. Et avec Axios ?
+Axios lance automatiquement une erreur pour les statuts comme 404 ou 500.
+Donc on passe directement dans catch.

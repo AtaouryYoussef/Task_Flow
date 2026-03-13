@@ -1,11 +1,11 @@
 import { createContext, useContext, useReducer } from 'react';
-import type { ReactNode } from 'react';
+import type { Dispatch, ReactNode } from 'react';
 import { authReducer, initialState } from './authReducer';
 import type { AuthState, AuthAction } from './authReducer';
   
 interface AuthContextType { 
   state: AuthState; 
-  dispatch: React.Dispatch<AuthAction>; 
+  dispatch: Dispatch<AuthAction>; 
 } 
   
 const AuthContext = createContext<AuthContextType | null>(null); 
