@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../features/auth/AuthContext';
 import api from '../api/axios';
 import Header from '../components/Header';
+import type { RootState } from '../store';
 import styles from './ProjectDetail.module.css';
 
 interface Project {
@@ -14,7 +15,7 @@ interface Project {
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { state: authState, dispatch } = useAuth();
+  const userName = useSelector((state: RootState) => state.auth.user?.name);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,17 +37,13 @@ export default function ProjectDetail() {
 
   return (
     <div className={styles.layout}>
-      <Header
-        title="TaskFlow"
-        onMenuClick={() => navigate('/dashboard')}
-        userName={authState.user?.name}
-        onLogout={() => dispatch({ type: 'LOGOUT' })}
-      />
+      <Header title="TaskFlow" onMenuClick={() => navigate('/dashboard')} />
       <main className={styles.main}>
         <div className={styles.header}>
           <span className={styles.dot} style={{ background: project.color }} />
           <h2>{project.name}</h2>
         </div>
+        {userName && <p className={styles.info}>Connecte en tant que: {userName}</p>}
         <p className={styles.info}>Projet ID: {project.id}</p>
       </main>
     </div>

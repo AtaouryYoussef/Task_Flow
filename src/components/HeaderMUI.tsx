@@ -1,14 +1,18 @@
 import { AppBar, Box, Button, IconButton, Toolbar, Typography } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useDispatch, useSelector } from 'react-redux';
+import { logout } from '../features/auth/authSlice';
+import type { AppDispatch, RootState } from '../store';
 
 interface HeaderProps {
   title: string;
   onMenuClick: () => void;
-  userName?: string;
-  onLogout?: () => void;
 }
 
-export default function HeaderMUI({ title, onMenuClick, userName, onLogout }: HeaderProps) {
+export default function HeaderMUI({ title, onMenuClick }: HeaderProps) {
+  const dispatch = useDispatch<AppDispatch>();
+  const userName = useSelector((state: RootState) => state.auth.user?.name);
+
   return (
     <AppBar position="static" sx={{ backgroundColor: '#1B8C3E' }}>
       <Toolbar>
@@ -20,12 +24,12 @@ export default function HeaderMUI({ title, onMenuClick, userName, onLogout }: He
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           {userName && <Typography variant="body2">{userName}</Typography>}
-          {onLogout && (
+          {userName && (
             <Button
               color="inherit"
               variant="outlined"
               sx={{ borderColor: 'rgba(255,255,255,0.3)' }}
-              onClick={onLogout}
+              onClick={() => dispatch(logout())}
             >
               Déconnexion
             </Button>

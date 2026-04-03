@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, Button, Card, CardContent, TextField, Typography } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
-import { useAuth } from './AuthContext';
+import type { AppDispatch, RootState } from '../../store';
+import { loginFailure, loginStart, loginSuccess } from './authSlice';
 
 interface LoginLocationState {
   from?: string;
@@ -11,34 +13,44 @@ interface LoginLocationState {
 export default function LoginMUI() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { state, dispatch } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, loading, error } = useSelector((state: RootState) => state.auth);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const from = (location.state as LoginLocationState | null)?.from || '/dashboard';
 
   useEffect(() => {
-    if (state.user) {
+    if (user) {
       navigate(from, { replace: true });
     }
-  }, [state.user, navigate, from]);
+  }, [user, navigate, from]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    dispatch({ type: 'LOGIN_START' });
+    dispatch(loginStart());
 
     try {
       const { data: users } = await api.get(`/users?email=${email}`);
 
       if (users.length === 0 || users[0].password !== password) {
-        dispatch({ type: 'LOGIN_FAILURE', payload: 'Email ou mot de passe incorrect' });
+        dispatch(loginFailure('Email ou mot de passe incorrect'));
         return;
       }
 
       const { password: _password, ...user } = users[0];
-      dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+      const fakeToken = btoa(
+        JSON.stringify({
+          userId: user.id,
+          email: user.email,
+          role: 'admin',
+          exp: Date.now() + 3600000,
+        })
+      );
+
+      dispatch(loginSuccess({ user, token: fakeToken }));
     } catch {
-      dispatch({ type: 'LOGIN_FAILURE', payload: 'Erreur serveur' });
+      dispatch(loginFailure('Erreur serveur'));
     }
   }
 
@@ -61,7 +73,7 @@ export default function LoginMUI() {
             Connectez-vous pour continuer
           </Typography>
 
-          {state.error && <Alert severity="error">{state.error}</Alert>}
+          {error && <Alert severity="error">{error}</Alert>}
 
           <Box
             component="form"
@@ -88,10 +100,10 @@ export default function LoginMUI() {
               type="submit"
               variant="contained"
               fullWidth
-              disabled={state.loading}
+              disabled={loading}
               sx={{ bgcolor: '#1B8C3E', '&:hover': { bgcolor: '#157a33' } }}
             >
-              {state.loading ? 'Connexion...' : 'Se connecter'}
+              {loading ? 'Connexion...' : 'Se connecter'}
             </Button>
           </Box>
         </CardContent>
